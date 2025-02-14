@@ -1,0 +1,17 @@
+<html>
+  <head>
+    <title>EntraGo - Login</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>EntraGo</h1>
+      <form action="/api/auth/login" method="POST">
+        <input type="email" name="email" placeholder="Email" required />
+        <input type="password" name="password" placeholder="Senha" required />
+        <button type="submit">Entrar</button>
+      </form>
+      <p>Não tem conta? <a href="/register">Cadastre-se</a></p>
+    </div>
+  </body>
+</html>
