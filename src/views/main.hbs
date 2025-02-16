@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <title>EntraGo - {{title}}</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="container">
+      {{#if user}}
+        <nav>
+          <a href="/purchases">Compras</a>
+          <a href="/logout">Sair</a>
+        </nav>
+      {{/if}}
+
+      {{{body}}}
+    </div>
+  </body>
+</html>
