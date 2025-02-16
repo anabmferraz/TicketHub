@@ -5,17 +5,25 @@
   </head>
   <body>
     <div class="container">
-      <h1>Suas Compras</h1>
-      {{#each purchases}}
-        <div class="purchase-card">
-          <h3>{{this.Ticket.name}}</h3>
-          <p>Quantidade: {{this.quantity}}</p>
-          <p>Preço Unitário: R$ {{this.Ticket.price}}</p>
-          <a href="/ticket/{{this.id}}">Detalhes</a>
-        </div>
-      {{else}}
-        <p>Nenhuma compra realizada.</p>
-      {{/each}}
-    </div>
+  <h1>Suas Compras</h1>
+
+  {{#if purchases}}
+    {{#each purchases}}
+      <div class="purchase-card">
+        <h3>{{this.Ticket.name}}</h3>
+        <p>Quantidade: {{this.quantity}}</p>
+        <p>Preço Unitário: R$ {{this.Ticket.price}}</p>
+        <p>Preço Total: R$ {{multiply this.quantity this.Ticket.price}}</p>
+        <p>Data da Compra: {{formatDate this.createdAt}}</p>
+        <a href="/ticket/{{this.id}}?token={{../token}}" class="details-link">Ver Detalhes</a>
+      </div>
+    {{/each}}
+  {{else}}
+    <p>Nenhuma compra realizada.</p>
+  {{/if}}
+
+  <a href="/login" class="back-link">Voltar para a página inicial</a>
+</div>
   </body>
 </html>
+

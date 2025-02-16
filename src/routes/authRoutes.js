@@ -4,17 +4,18 @@ const {
   register,
   login,
   createAdmin,
+  authenticateToken, 
 } = require("../controllers/authController");
 const {
   authMiddleware,
   adminMiddleware,
 } = require("../middlewares/authMiddleware");
 
-// Rotas públicas
+
 router.post("/register", register);
 router.post("/login", login);
 
-// Rota protegida para criar admins (requer token de admin)
-router.post("/create-admin", authMiddleware, adminMiddleware, createAdmin);
+
+router.post("/create-admin", authenticateToken, adminMiddleware, createAdmin);
 
 module.exports = router;

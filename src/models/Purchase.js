@@ -7,7 +7,7 @@ const Purchase = sequelize.define(
     quantity: { type: DataTypes.INTEGER, allowNull: false },
   },
   {
-    timestamps: true, // Garante que Sequelize adicione createdAt e updatedAt
+    timestamps: true,
   }
 );
 

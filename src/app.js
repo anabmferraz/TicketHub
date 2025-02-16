@@ -4,7 +4,7 @@ const { engine } = require("express-handlebars");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const sequelize = require("./config/db");
-const path = require("path"); // Importe o módulo path
+const path = require("path");
 const authRoutes = require("./routes/authRoutes");
 const ticketRoutes = require("./routes/ticketRoutes");
 const purchaseRoutes = require("./routes/purchaseRoutes");
@@ -12,13 +12,12 @@ const { User, Ticket, Purchase } = require("./models");
 
 const app = express();
 
-// 🔹 Configuração do Handlebars (Caminhos Absolutos)
 app.engine(
   "hbs",
   engine({
     extname: ".hbs",
-    layoutsDir: path.join(__dirname, "views"), // Caminho absoluto para views
-    defaultLayout: "main", // Nome do arquivo sem extensão
+    layoutsDir: path.join(__dirname, "views"),
+    defaultLayout: "main",
     helpers: {
       multiply: (a, b) => a * b,
       formatDate: (date) => new Date(date).toLocaleDateString("pt-BR"),
@@ -26,48 +25,80 @@ app.engine(
   })
 );
 app.set("view engine", "hbs");
-app.set("views", path.join(__dirname, "views")); // Caminho absoluto
+app.set("views", path.join(__dirname, "views"));
 
-// 🔹 Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public"))); // Caminho para arquivos estáticos
+app.use(express.static(path.join(__dirname, "public")));
 
-// 🔹 Rotas da API
 app.use("/api/auth", authRoutes);
 app.use("/api/tickets", ticketRoutes);
 app.use("/api/purchases", purchaseRoutes);
 
-// 🔹 Rotas da Interface Web
-app.get("/login", (req, res) => res.render("login", { title: "Login" }));
+app.get("/login", (req, res) => {
+  const error = req.query.error;
+  res.render("login", {
+    title: "Login",
+    error: error || null,
+  });
+});
+app.get("/register", (req, res) =>
+  res.render("register", { title: "Cadastro" })
+);
 
-app.get("/purchases", async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.redirect("/login");
+app.get("/token-login", (req, res) => {
+  const token = req.query.token;
+
+  if (!token) {
+    return res.redirect("/login?error=Token não fornecido");
+  }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const purchases = await Purchase.findAll({
-      where: { userId: decoded.id },
-      include: [Ticket],
-    });
-
-    res.render("purchases", {
-      title: "Compras",
-      purchases,
-      user: decoded,
-    });
+    jwt.verify(token, process.env.JWT_SECRET);
+    res.redirect(`/purchases?token=${encodeURIComponent(token)}`);
   } catch (error) {
-    res.redirect("/login");
+    res.redirect("/login?error=Token inválido ou expirado");
   }
 });
+app.get("/purchases", async (req, res) => {
+  try {
+    const token = req.query.token;
+    if (!token) throw new Error("Token ausente");
 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    const purchases = await Purchase.findAll({
+      where: { userId: decoded.id },
+      include: [
+        {
+          model: Ticket,
+          required: true,
+          attributes: ["name", "price"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      raw: true,
+      nest: true,
+    });
+
+    res.render("purchaseView", {
+      title: "Suas Compras",
+      purchases: purchases.length ? purchases : null,
+      token,
+    });
+  } catch (error) {
+    console.error("Erro:", error.message);
+    res.redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+});
 app.get("/ticket/:id", async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.redirect("/login");
+  const token = req.query.token;
+
+  if (!token) return res.redirect("/login?error=Token ausente");
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
     const purchase = await Purchase.findOne({
       where: {
         id: req.params.id,
@@ -76,25 +107,27 @@ app.get("/ticket/:id", async (req, res) => {
       include: [Ticket],
     });
 
-    if (!purchase) return res.redirect("/purchases");
+    if (!purchase) {
+      return res.redirect(
+        `/purchases?token=${token}&error=Compra não encontrada`
+      );
+    }
 
     res.render("ticketView", {
       title: "Detalhes do Ingresso",
-      purchase,
-      user: decoded,
+      purchase: purchase.get({ plain: true }),
+      token,
     });
   } catch (error) {
-    res.redirect("/login");
+    res.redirect("/login?error=Token inválido");
   }
 });
 
-// 🔹 Associações dos Modelos
 User.hasMany(Purchase);
 Ticket.hasMany(Purchase);
 Purchase.belongsTo(User);
 Purchase.belongsTo(Ticket);
 
-// 🔹 Criação do Admin Padrão
 const createDefaultAdmin = async () => {
   const adminEmail = "admin@gmail.com";
   const adminPassword = "admin1234";
@@ -109,22 +142,21 @@ const createDefaultAdmin = async () => {
         password: hashedPassword,
         isAdmin: true,
       });
-      console.log("✅ Admin criado com sucesso!");
+      console.log("Admin criado com sucesso!");
     }
   } catch (error) {
-    console.error("❌ Erro ao criar admin:", error);
+    console.error("Erro ao criar admin:", error);
   }
 };
 
-// 🔹 Inicialização do Servidor
 sequelize
   .sync({ force: false })
   .then(async () => {
     await createDefaultAdmin();
     app.listen(3000, () => {
-      console.log("✅ Servidor rodando em http://localhost:3000");
+      console.log("Servidor rodando em http://localhost:3000");
     });
   })
   .catch((error) => {
-    console.error("❌ Erro ao sincronizar o banco:", error);
+    console.error("Erro ao sincronizar o banco:", error);
   });

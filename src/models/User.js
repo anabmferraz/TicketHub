@@ -1,5 +1,5 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/db"); // ajuste o caminho se necessário
+const sequelize = require("../config/db");
 
 const User = sequelize.define(
   "User",
@@ -28,7 +28,7 @@ const User = sequelize.define(
     },
   },
   {
-    timestamps: false, // adiciona createdAt e updatedAt automaticamente
+    timestamps: false,
   }
 );
 

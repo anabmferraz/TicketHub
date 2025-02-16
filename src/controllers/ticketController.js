@@ -1,6 +1,5 @@
 const Ticket = require("../models/Ticket");
 
-// Listar todos os tickets (GET /api/tickets)
 exports.listTickets = async (req, res) => {
   try {
     const tickets = await Ticket.findAll();
@@ -10,12 +9,10 @@ exports.listTickets = async (req, res) => {
   }
 };
 
-// Criar novo ticket (POST /api/tickets)
 exports.createTicket = async (req, res) => {
   try {
     const { name, price, quantity } = req.body;
 
-    // Validação básica
     if (!name || !price || !quantity) {
       return res.status(400).json({ error: "Preencha todos os campos!" });
     }
@@ -28,7 +25,6 @@ exports.createTicket = async (req, res) => {
   }
 };
 
-// Atualizar ticket (PUT /api/tickets/:id)
 exports.updateTicket = async (req, res) => {
   try {
     const ticket = await Ticket.findByPk(req.params.id);
@@ -44,7 +40,6 @@ exports.updateTicket = async (req, res) => {
   }
 };
 
-// Deletar ticket (DELETE /api/tickets/:id)
 exports.deleteTicket = async (req, res) => {
   try {
     const ticket = await Ticket.findByPk(req.params.id);

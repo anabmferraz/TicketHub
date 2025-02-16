@@ -9,7 +9,7 @@ const Ticket = sequelize.define(
     quantity: { type: DataTypes.INTEGER, defaultValue: 0 },
   },
   {
-    timestamps: true, // Adiciona automaticamente createdAt e updatedAt
+    timestamps: true,
   }
 );
 

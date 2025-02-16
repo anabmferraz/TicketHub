@@ -11,10 +11,9 @@ const {
   adminMiddleware,
 } = require("../middlewares/authMiddleware");
 
-// Rotas CRUD para tickets (apenas admins)
-router.get("/", authMiddleware, adminMiddleware, listTickets); // Listar tickets
-router.post("/", authMiddleware, adminMiddleware, createTicket); // Criar ticket
-router.put("/:id", authMiddleware, adminMiddleware, updateTicket); // Atualizar ticket
-router.delete("/:id", authMiddleware, adminMiddleware, deleteTicket); // Excluir ticket
+router.get("/", authMiddleware, adminMiddleware, listTickets);
+router.post("/", authMiddleware, adminMiddleware, createTicket);
+router.put("/:id", authMiddleware, adminMiddleware, updateTicket);
+router.delete("/:id", authMiddleware, adminMiddleware, deleteTicket);
 
 module.exports = router;
